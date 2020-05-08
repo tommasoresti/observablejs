@@ -1,15 +1,18 @@
 type OnValueUpdated<T> = (newValue: T, oldValue?: T) => void
 
 type Observable<T> = {
-	$data: any,
-	$listeners: Map<keyof T, Set<OnValueUpdated<any>>>,
 	$listen: <K extends keyof T>(key: K, callback: OnValueUpdated<T[K]>) => void,
 	$stop: <K extends keyof T>(key: K, callback: OnValueUpdated<T[K]>) => void,
+}
+
+type Notifier<T> = {
+	$data: any,
+	$listeners: Map<keyof T, Set<OnValueUpdated<any>>>,
 	$notify: <K extends keyof T>(key: K, oldValue: T[K]) => void
 }
 
 const observe = <T>(data: T): Observable<T> & T => {
-	const proxy: Observable<T> & T = {
+	const proxy: Observable<T> & Notifier<T> & T = {
 		...data,
 		$data: {},
 		$listeners: new Map(),
