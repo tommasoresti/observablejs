@@ -1,44 +1,78 @@
 import observe, {Observable} from "../src/lib";
 
-type Dummy = {
-    foo: string,
-    bar: string,
-}
+describe('The library creates', () => {
 
-describe("The library creates an observable object", () => {
+    type Dummy = {
+        foo: string,
+        bar: string,
+    }
 
-    let observable: Observable<Dummy> & Dummy;
+    describe("an observable object from a plain object", () => {
 
-    beforeEach(() => {
-        observable = observe({
-            foo: "foo",
-            bar: "bar"
-        })
+        let observable: Observable<Dummy> & Dummy;
+
+        beforeEach(() => {
+            observable = observe({
+                foo: "foo",
+                bar: "bar"
+            })
+        });
+
+        it("it exists", () => {
+            expect(observable).not.toBeNull()
+        });
+
+        it("it updates his fields when modified", () => {
+            observable.foo = "FOO"
+
+            expect(observable.foo).toBe("FOO")
+            expect(observable.bar).toBe("bar")
+        });
+
+        it("it allows fields to be observed", () => {
+            let newValueHolder = undefined;
+            let observation = (newValue) => newValueHolder = newValue;
+            observable.$observe("foo", observation)
+
+            observable.foo = "baz"
+
+            expect(newValueHolder).toBe("baz")
+        });
+
+        it("it allows observations to stop", () => {
+            let newValueHolder = undefined;
+            let observation = (newValue) => newValueHolder = newValue;
+            observable.$observe("foo", observation)
+
+            observable.$stop("foo", observation)
+            observable.foo = "baz"
+
+            expect(newValueHolder).toBeUndefined()
+        });
     });
 
-    it("it exists", () => {
-        expect(observable).not.toBeNull()
-    });
+    describe("an observable object from an object with functions", () => {
 
-    it("it allows fields to be observed", () => {
-        let newValueHolder = undefined;
-        let observation = (newValue) => newValueHolder = newValue;
-        observable.$observe("foo", observation)
+        type DummyWithFunctions = {
+            baz: (string) => string
+        } & Dummy
 
-        observable.foo = "baz"
+        let observable: Observable<DummyWithFunctions> & DummyWithFunctions;
 
-        expect(newValueHolder).toBe("baz")
-    });
+        beforeEach(() => {
 
-    it("it allows observations to stop", () => {
-        let newValueHolder = undefined;
-        let observation = (newValue) => newValueHolder = newValue;
-        observable.$observe("foo", observation)
+            const object: DummyWithFunctions = {
+                foo: "foo",
+                bar: "bar",
+                baz: (value) => value
+            }
 
-        observable.$stop("foo", observation)
-        observable.foo = "baz"
+            observable = observe(object)
+        });
 
-        expect(newValueHolder).toBeUndefined()
+        it("it should maintain his functions", () => {
+            expect(observable.baz("Hello! Baz.")).toBe("Hello! Baz.")
+        });
     });
 
 });
