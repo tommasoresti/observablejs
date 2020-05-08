@@ -1,46 +1,70 @@
 type OnValueUpdated<T> = (newValue: T, oldValue?: T) => void
 
 type Observable<T> = {
-	$listen: <K extends keyof T>(key: K, callback: OnValueUpdated<T[K]>) => void,
-	$stop: <K extends keyof T>(key: K, callback: OnValueUpdated<T[K]>) => void,
+    $observe: <K extends keyof T>(key: K, callback: OnValueUpdated<T[K]>) => void,
+    $stop: <K extends keyof T>(key: K, callback: OnValueUpdated<T[K]>) => void,
 }
+
+const observable = <T extends Object>(data: T, listeners: Map<keyof T, Set<OnValueUpdated<any>>>): Observable<T> => ({
+    $observe: function (key, onChange) {
+        listeners.set(key, (listeners.get(key) || new Set()).add(onChange))
+    },
+    $stop: function (key, onChange) {
+        listeners.get(key)?.delete(onChange)
+    }
+})
 
 type Notifier<T> = {
-	$data: any,
-	$listeners: Map<keyof T, Set<OnValueUpdated<any>>>,
-	$notify: <K extends keyof T>(key: K, oldValue: T[K]) => void
+    $data: Map<keyof T, any>,
+    $listeners: Map<keyof T, Set<OnValueUpdated<any>>>,
+    $notify: <K extends keyof T>(key: K, oldValue: T[K]) => void
 }
 
-const observe = <T>(data: T): Observable<T> & T => {
-	const proxy: Observable<T> & Notifier<T> & T = {
-		...data,
-		$data: {},
-		$listeners: new Map(),
-		$listen: function(key, onChange) {
-			this.$listeners.set(key, (this.$listeners.get(key) || new Set()).add(onChange))
-		},
-		$stop: function(key, onChange) {
-			this.$listeners.get(key)?.delete(onChange)
-		},
-		$notify: function(key, oldValue) {
-			this.$listeners.get(key)?.forEach(callback => callback(this.$data[key], oldValue))
-		}
-	}
+const notifier = <T extends Object>(data: T, listeners: Map<keyof T, Set<OnValueUpdated<any>>>): Notifier<T> => ({
+    $data: new Map(),
+    $listeners: listeners,
+    $notify: function (key, oldValue) {
+        this.$listeners.get(key)?.forEach(callback => callback(this.$data.get(key), oldValue))
+    }
+})
 
-	for(let key in data) {
-		proxy.$data[key] = data[key]
-		delete proxy[key]
-		Object.defineProperty(proxy, key, {
-		    get: function() { return proxy.$data[key]; },
-		    set: function(value) {
-		        if (proxy.$data[key] !== value) {
-					const oldValue = proxy.$data[key]
-		            proxy.$data[key] = value;
-		            proxy.$notify(key, oldValue)
-		        }
-		    },
-		})
-	}
-
-	return proxy;
+function proxify<T>(data: T, proxy: Notifier<T>) {
+    Object.getOwnPropertyNames(data).forEach((property: string) => {
+        const key = property as keyof T
+        proxy.$data.set(key, data[key])
+        setterAndGetter(proxy, key);
+    })
+    return proxy as Notifier<T> & T
 }
+
+const getter = <T>(proxy: Notifier<T>, key: keyof T) => ({
+    get: function () {
+        return proxy.$data.get(key);
+    }
+})
+
+const setter = <T, K extends keyof T>(proxy: Notifier<T>, key: keyof T) => ({
+    set: function (value: T[K]) {
+        if (proxy.$data.get(key) !== value) {
+            const oldValue = proxy.$data.get(key)
+            proxy.$data.set(key, value)
+            proxy.$notify(key, oldValue)
+        }
+    }
+})
+
+const setterAndGetter = <T>(proxy: Notifier<T>, key: keyof T) => {
+    Object.defineProperty(proxy, key, {
+        ...getter(proxy, key),
+        ...setter(proxy, key),
+    })
+}
+
+const build = <T extends Object>(data: T): Observable<T> & T => {
+    const listeners = new Map()
+    return {
+        ...proxify(data, notifier(data, listeners)),
+        ...observable(data, listeners)
+    };
+}
+
