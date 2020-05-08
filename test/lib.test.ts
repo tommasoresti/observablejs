@@ -1,4 +1,5 @@
-import observe, {Observable} from "../src/lib";
+import {Observable} from "@/observable";
+import observe from "@/lib";
 
 describe('The library creates', () => {
 
@@ -31,7 +32,7 @@ describe('The library creates', () => {
 
         it("it allows fields to be observed", () => {
             let newValueHolder = undefined;
-            let observation = (newValue) => newValueHolder = newValue;
+            let observation = (newValue: string) => newValueHolder = newValue;
             observable.$observe("foo", observation)
 
             observable.foo = "baz"
@@ -41,7 +42,7 @@ describe('The library creates', () => {
 
         it("it allows observations to stop", () => {
             let newValueHolder = undefined;
-            let observation = (newValue) => newValueHolder = newValue;
+            let observation = (newValue: string) => newValueHolder = newValue;
             observable.$observe("foo", observation)
 
             observable.$stop("foo", observation)
@@ -54,7 +55,7 @@ describe('The library creates', () => {
     describe("an observable object from an object with functions", () => {
 
         type DummyWithFunctions = {
-            baz: (string) => string
+            baz: (string: string) => string
         } & Dummy
 
         let observable: Observable<DummyWithFunctions> & DummyWithFunctions;

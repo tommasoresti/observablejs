@@ -3,17 +3,11 @@
     "target": "es2015",
     "module": "commonjs",
     "strict": true,
-    "outDir": "dist",
-    "sourceMap": true,
-    "baseUrl": ".",
+    "baseUrl": "..",
     "paths": {
       "@/*": [
-        "src/*",
-        "../src/*"
+        "src/*"
       ]
     }
-  },
-  "include": [
-    "src/**/*"
-  ]
+  }
 }
