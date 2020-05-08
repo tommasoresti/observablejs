@@ -2,15 +2,23 @@
   "name": "jsbinding",
   "version": "0.0.1",
   "description": "",
-  "main": "main.js",
+  "main": "dist/lib.js",
   "scripts": {
-    "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm run build && node dist/main.js"
+    "build": "rimraf dist && tsc --build",
+    "test": "jest",
+    "start": "npm run build && node dist/lib.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
+    "@babel/preset-typescript": "^7.9.0",
+    "@types/jest": "^25.2.1",
+    "babel-jest": "^26.0.1",
+    "jest": "^26.0.1",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^25.5.0",
     "typescript": "^3.8.3"
   }
 }

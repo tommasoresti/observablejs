@@ -1,6 +1,6 @@
 type OnValueUpdated<T> = (newValue: T, oldValue?: T) => void
 
-type Observable<T> = {
+export type Observable<T> = {
     $observe: <K extends keyof T>(key: K, callback: OnValueUpdated<T[K]>) => void,
     $stop: <K extends keyof T>(key: K, callback: OnValueUpdated<T[K]>) => void,
 }
@@ -62,9 +62,10 @@ const setterAndGetter = <T>(proxy: Notifier<T>, key: keyof T) => {
 
 export default <T extends Object>(data: T): Observable<T> & T => {
     const listeners = new Map()
-    return {
-        ...proxify(data, notifier(data, listeners)),
-        ...observable(data, listeners)
-    };
+    return Object.assign(
+        proxify(data, notifier(data, listeners)),
+        observable(data, listeners)
+    );
 }
+
 
