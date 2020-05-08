@@ -60,7 +60,7 @@ const setterAndGetter = <T>(proxy: Notifier<T>, key: keyof T) => {
     })
 }
 
-const build = <T extends Object>(data: T): Observable<T> & T => {
+export default <T extends Object>(data: T): Observable<T> & T => {
     const listeners = new Map()
     return {
         ...proxify(data, notifier(data, listeners)),
