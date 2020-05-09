@@ -1,4 +1,4 @@
-import {OnValueUpdated} from "@/callback";
+import {OnValueUpdated} from "./callback";
 
 export type Observable<T> = {
     $observe: <K extends keyof T>(key: K, callback: OnValueUpdated<T[K]>) => void,

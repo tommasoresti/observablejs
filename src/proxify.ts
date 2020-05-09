@@ -1,4 +1,4 @@
-import {Notifier} from "@/notifier";
+import {Notifier} from "./notifier";
 
 const getter = <T>(proxy: Notifier<T>, key: keyof T) => ({
     get: function () {

@@ -1,4 +1,4 @@
-import {OnValueUpdated} from "@/callback";
+import {OnValueUpdated} from "./callback";
 
 export type Notifier<T> = {
     $data: Map<keyof T, any>,
