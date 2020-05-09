@@ -1,8 +1,11 @@
 {
-  "name": "jsbinding",
+  "name": "observablejs",
   "version": "0.0.1",
   "description": "",
   "main": "dist/lib.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "rimraf dist && tsc --build",
     "test": "jest",
